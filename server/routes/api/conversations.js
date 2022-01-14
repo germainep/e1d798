@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const { User, Conversation, Message } = require("../../db/models");
-const { Op } = require("sequelize");
+const { Op, DATE } = require("sequelize");
 const onlineUsers = require("../../onlineUsers");
 
 // get all conversations for a user, include latest message text for preview, and all messages
@@ -88,6 +88,11 @@ router.get("/", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+router.put("/:id", async (req, res, next) => {
+  const conversation = await Conversation.findById(req.params.id);
+  await conversation.update({ lastActive: DATE });
 });
 
 module.exports = router;
