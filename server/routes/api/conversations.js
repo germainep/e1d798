@@ -18,10 +18,10 @@ router.get("/", async (req, res, next) => {
           user2Id: userId,
         },
       },
-      attributes: ["id"],
+      attributes: ["id", "unread"],
       order: [[Message, "createdAt", "ASC"]],
       include: [
-        { model: Message, order: ["createdAt", "ASC"] },
+        { model: Message, order: ["createdAt", "DESC"] },
         {
           model: User,
           as: "user1",
@@ -70,6 +70,17 @@ router.get("/", async (req, res, next) => {
       // set properties for notification count and latest message preview
       convoJSON.latestMessageText =
         convoJSON.messages[convoJSON.messages.length - 1].text;
+
+      // Counting messages in each conversation where the sender is not the current user
+      const unreadCount = await Message.count({
+        where: {
+          conversationId: convoJSON.id,
+          senderId: {
+            [Op.not]: userId,
+          },
+        },
+      });
+      convoJSON.unread = unreadCount;
       conversations[i] = convoJSON;
     }
 
