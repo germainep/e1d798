@@ -18,7 +18,7 @@ router.get("/", async (req, res, next) => {
           user2Id: userId,
         },
       },
-      attributes: ["id", "unread"],
+      attributes: ["id"],
       order: [[Message, "createdAt", "ASC"]],
       include: [
         { model: Message, order: ["createdAt", "DESC"] },
@@ -78,6 +78,9 @@ router.get("/", async (req, res, next) => {
           senderId: {
             [Op.not]: userId,
           },
+          createdAt: {
+            [Op.gt]: convoJSON.updatedAt,
+          },
         },
       });
       convoJSON.unread = unreadCount;
@@ -91,8 +94,15 @@ router.get("/", async (req, res, next) => {
 });
 
 router.put("/:id", async (req, res, next) => {
-  const conversation = await Conversation.findById(req.params.id);
-  await conversation.update({ lastActive: DATE });
+  try {
+    const userId = req.user.id;
+    const conversation = await Conversation.findById(req.params.id, userId);
+    await conversation.update({ updatedAt: new DATE() });
+    console.log(conversation.updatedAt);
+    res.json("updated");
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = router;
