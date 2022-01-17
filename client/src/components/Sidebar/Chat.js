@@ -2,8 +2,8 @@ import React from "react";
 import { Box } from "@material-ui/core";
 import { BadgeAvatar, ChatContent, Notifications } from "../Sidebar";
 import { makeStyles } from "@material-ui/core/styles";
-import { changeActive } from "../../store/utils/thunkCreators";
 import { connect } from "react-redux";
+import { callToUpdateConversation } from "../../store/utils/thunkCreators";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -25,7 +25,7 @@ const Chat = (props) => {
   const { otherUser } = conversation;
 
   const handleClick = async (conversation) => {
-    await props.changeActive(conversation.id);
+    await props.callToUpdateConversation(conversation);
   };
 
   return (
@@ -46,8 +46,8 @@ const Chat = (props) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    changeActive: (id) => {
-      dispatch(changeActive(id));
+    callToUpdateConversation: (conversation) => {
+      dispatch(callToUpdateConversation(conversation));
     },
   };
 };
