@@ -1,6 +1,6 @@
 import React from "react";
-import { Box } from "@material-ui/core";
-import { BadgeAvatar, ChatContent, Notifications } from "../Sidebar";
+import { Badge, Box } from "@material-ui/core";
+import { BadgeAvatar, ChatContent } from "../Sidebar";
 import { makeStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
 import { callToUpdateConversation } from "../../store/utils/thunkCreators";
@@ -37,9 +37,7 @@ const Chat = (props) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
-      {conversation.unread > 0 && (
-        <Notifications unread={conversation.unread} />
-      )}
+      <Badge badgeContent={conversation.unread} color="primary" />
     </Box>
   );
 };
