@@ -29,15 +29,33 @@ Conversation.findById = async function (conversationId, userId) {
     where: {
       id: conversationId,
     },
-    include: ["user1", "user2"],
+    attributes: ["id"],
+    include: [
+      { model: Message, order: ["createdAt", "DESC"] },
+      {
+        model: User,
+        as: "user1",
+        where: {
+          id: {
+            [Op.not]: userId,
+          },
+        },
+        attributes: ["id", "username", "photoUrl"],
+        required: false,
+      },
+      {
+        model: User,
+        as: "user2",
+        where: {
+          id: {
+            [Op.not]: userId,
+          },
+        },
+        attributes: ["id", "username", "photoUrl"],
+        required: false,
+      },
+    ],
   });
-  if (conversation.user1) {
-    conversation.otherUser = conversation.user1;
-    delete conversation.user1;
-  } else if (conversation.user2) {
-    conversation.otherUser = conversation.user2;
-    delete conversation.user2;
-  }
 
   return conversation;
 };
