@@ -123,8 +123,8 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
 export const callToUpdateConversation = (conversation) => async (dispatch) => {
   try {
     dispatch(setActiveChat(conversation.otherUser.username));
-    await axios.put(`/api/conversations/${conversation.id}`);
-    dispatch(updateConversation(conversation));
+    const { data } = await axios.put(`/api/conversations/${conversation.id}`);
+    dispatch(updateConversation(data));
   } catch (error) {
     console.error(error);
   }

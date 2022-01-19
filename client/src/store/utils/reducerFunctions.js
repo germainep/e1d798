@@ -90,9 +90,7 @@ export const addNewConvoToStore = (state, recipientId, message) => {
 
 export const updateConversationToStore = (state, conversation) => {
   const conversationsCopy = state.filter((convo) => {
-    if (convo.id !== conversation.id) {
-      return convo;
-    }
+    return !(convo.id === conversation.id);
   });
 
   const convoCopy = { ...conversation };
