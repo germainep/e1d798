@@ -95,8 +95,25 @@ router.get("/", async (req, res, next) => {
 
 router.put("/:id", async (req, res, next) => {
   try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
     const userId = req.user.id;
+
+    await Message.update(
+      { read: true },
+      {
+        where: {
+          conversationId: req.params.id,
+          senderId: {
+            [Op.not]: userId,
+          },
+        },
+      }
+    );
+
     const conversation = await Conversation.findById(req.params.id, userId);
+
     const convoJSON = conversation.toJSON();
 
     if (convoJSON.user1) {
@@ -106,26 +123,6 @@ router.put("/:id", async (req, res, next) => {
       convoJSON.otherUser = convoJSON.user2;
       delete convoJSON.user2;
     }
-
-    // set read messages to true in the database
-    await Message.update(
-      { read: true },
-      {
-        where: {
-          conversationId: convoJSON.id,
-          senderId: {
-            [Op.not]: userId,
-          },
-        },
-      }
-    );
-
-    // set the read state on the conversation being sent back to the frontend
-    const readSet = convoJSON.messages.map((message) => {
-      message.read = true;
-      return message;
-    });
-    convoJSON.messages = readSet;
 
     convoJSON.latestMessageText = {
       text: convoJSON.messages[convoJSON.messages.length - 1].text,
