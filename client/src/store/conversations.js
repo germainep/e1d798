@@ -4,7 +4,7 @@ import {
   addSearchedUsersToStore,
   removeOfflineUserFromStore,
   addMessageToStore,
-  updateConversationToStore,
+  selectConversation,
 } from "./utils/reducerFunctions";
 
 // ACTIONS
@@ -17,6 +17,7 @@ const SET_SEARCHED_USERS = "SET_SEARCHED_USERS";
 const CLEAR_SEARCHED_USERS = "CLEAR_SEARCHED_USERS";
 const ADD_CONVERSATION = "ADD_CONVERSATION";
 const UPDATE_CONVERSATION = "UPDATE_CONVERSATION";
+const SET_ACTIVE_CHAT = "SET_ACTIVE_CHAT";
 
 // ACTION CREATORS
 
@@ -100,8 +101,9 @@ const reducer = (state = [], action) => {
         action.payload.recipientId,
         action.payload.newMessage
       );
-    case UPDATE_CONVERSATION:
-      return updateConversationToStore(state, action.conversation);
+    case SET_ACTIVE_CHAT:
+      return selectConversation(state, action.payload.conversation);
+
     default:
       return state;
   }

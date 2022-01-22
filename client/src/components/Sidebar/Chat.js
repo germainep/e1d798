@@ -3,7 +3,8 @@ import { Badge, Box } from "@material-ui/core";
 import { BadgeAvatar, ChatContent } from "../Sidebar";
 import { makeStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
-import { callToUpdateConversation } from "../../store/utils/thunkCreators";
+import { activateChat } from "../../store/utils/thunkCreators";
+import user from "../../store/user";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -24,12 +25,18 @@ const Chat = (props) => {
   const { conversation } = props;
   const { otherUser } = conversation;
 
-  const handleClick = async (conversation) => {
-    await props.callToUpdateConversation(conversation);
+  const handleClick = async (id, username) => {
+    if (!conversation.active) {
+      const data = { id: id, username: username };
+      await props.activateChat(data);
+    }
   };
 
   return (
-    <Box onClick={() => handleClick(conversation)} className={classes.root}>
+    <Box
+      onClick={() => handleClick(conversation.id, otherUser.username)}
+      className={classes.root}
+    >
       <BadgeAvatar
         photoUrl={otherUser.photoUrl}
         username={otherUser.username}
@@ -44,8 +51,8 @@ const Chat = (props) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    callToUpdateConversation: (conversation) => {
-      dispatch(callToUpdateConversation(conversation));
+    activateChat: (data) => {
+      dispatch(activateChat(data));
     },
   };
 };
