@@ -119,12 +119,15 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
     console.error(error);
   }
 };
-
-export const callToUpdateConversation = (conversation) => async (dispatch) => {
+const updateReadStatus = async (id) => {
+  const { data } = await axios.put(`/api/conversations/${id}`);
+  return data;
+};
+export const activateChat = (payload) => async (dispatch) => {
   try {
-    dispatch(setActiveChat(conversation.otherUser.username));
-    const { data } = await axios.put(`/api/conversations/${conversation.id}`);
-    dispatch(updateConversation(data));
+    const { username, id } = payload;
+    const data = await updateReadStatus(id);
+    dispatch(setActiveChat(data));
   } catch (error) {
     console.error(error);
   }
