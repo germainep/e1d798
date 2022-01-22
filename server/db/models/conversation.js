@@ -27,9 +27,17 @@ Conversation.findConversation = async function (user1Id, user2Id) {
 Conversation.findById = async function (conversationId, userId) {
   const conversation = await Conversation.findOne({
     where: {
-      id: conversationId,
+      [Op.and]: {
+        id: conversationId,
+        // makes sure to check that the req.user.id is one of the conversations users
+        [Op.or]: {
+          user1Id: userId,
+          user2Id: userId,
+        },
+      },
     },
     attributes: ["id"],
+    order: [[Message, "createdAt", "ASC"]],
     include: [
       { model: Message, order: ["createdAt", "DESC"] },
       {
