@@ -2,12 +2,13 @@ export const addMessageToStore = (state, payload) => {
   const { message, sender } = payload;
   // if sender isn't null, that means the message needs to be put in a brand new convo
   if (sender !== null) {
-    const newConvo = {
-      id: message.conversationId,
-      otherUser: sender,
-      messages: [message],
-      unread: 1,
-      latestMessageText: message.text,
+    const newConvo = {};
+    newConvo.id = message.conversationId;
+    newConvo.otherUser = sender;
+    newConvo.messages = [message];
+    newConvo.latestMessageText = {
+      text: message.text,
+      read: false,
     };
 
     return [newConvo, ...state];
@@ -16,10 +17,24 @@ export const addMessageToStore = (state, payload) => {
   return state.map((convo) => {
     if (convo.id === message.conversationId) {
       const convoCopy = { ...convo };
-      convoCopy.messages = [...convoCopy.messages, message];
-      convoCopy.latestMessageText = message.text;
+      if (!convo.active) {
+        convoCopy.messages = [...convoCopy.messages, message];
+        convoCopy.latestMessageText = {
+          text: message.text,
+          read: false,
+        };
+      } else {
+        convoCopy.messages = [
+          ...convoCopy.messages,
+          { ...message, unread: true },
+        ];
+        convoCopy.latestMessageText = {
+          text: message.text,
+          read: true,
+        };
+      }
 
-      if (convo.otherUser.id === message.senderId) {
+      if (convo.otherUser.id === message.senderId && !convo.active) {
         convoCopy.unread = convo.unread + 1;
       }
       return convoCopy;
@@ -79,7 +94,10 @@ export const addNewConvoToStore = (state, recipientId, message) => {
       const newConvo = { ...convo };
       newConvo.id = message.conversationId;
       newConvo.messages = [message];
-      newConvo.latestMessageText = message.text;
+      newConvo.latestMessageText = {
+        text: message.text,
+        read: false,
+      };
 
       return newConvo;
     } else {
@@ -88,13 +106,20 @@ export const addNewConvoToStore = (state, recipientId, message) => {
   });
 };
 
-export const updateConversationToStore = (state, conversation) => {
-  const conversationsCopy = state.filter((convo) => {
-    return !(convo.id === conversation.id);
+export const setActiveChatToStore = (state, username) => {
+  return username;
+};
+
+export const selectConversation = (state, conversation) => {
+  return state.map((convo) => {
+    if (convo.id === conversation.id) {
+      const convoCopy = { ...conversation };
+      convoCopy.active = true;
+      return convoCopy;
+    } else {
+      const convoCopy = { ...convo };
+      convoCopy.active = false;
+      return convoCopy;
+    }
   });
-
-  const convoCopy = { ...conversation };
-  convoCopy.unread = 0;
-
-  return [convoCopy, ...conversationsCopy];
 };
