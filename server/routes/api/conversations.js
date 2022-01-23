@@ -124,6 +124,12 @@ router.put("/:id", async (req, res, next) => {
       delete convoJSON.user2;
     }
 
+    if (onlineUsers.includes(convoJSON.otherUser.id)) {
+      convoJSON.otherUser.online = true;
+    } else {
+      convoJSON.otherUser.online = false;
+    }
+
     convoJSON.latestMessageText = {
       text: convoJSON.messages[convoJSON.messages.length - 1].text,
       read: convoJSON.messages[convoJSON.messages.length - 1].read,
