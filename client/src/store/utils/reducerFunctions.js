@@ -26,7 +26,7 @@ export const addMessageToStore = (state, payload) => {
       } else {
         convoCopy.messages = [
           ...convoCopy.messages,
-          { ...message, unread: true },
+          { ...message, read: true },
         ];
         convoCopy.latestMessageText = {
           text: message.text,
