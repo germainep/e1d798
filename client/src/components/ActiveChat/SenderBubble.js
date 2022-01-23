@@ -30,7 +30,6 @@ const useStyles = makeStyles(() => ({
 const SenderBubble = (props) => {
   const classes = useStyles();
   const { time, text, photo, lastRead } = props;
-  console.log(props);
 
   return (
     <Box className={classes.root}>
