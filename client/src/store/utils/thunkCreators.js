@@ -6,6 +6,7 @@ import {
   setNewMessage,
   setSearchedUsers,
   updateConversation,
+  activateConversation,
 } from "../conversations";
 import { gotUser, setFetchingStatus } from "../user";
 import { setActiveChat } from "../activeConversation";
@@ -124,10 +125,15 @@ const updateReadStatus = async (id) => {
   return data;
 };
 export const activateChat = (payload) => async (dispatch) => {
+  const { username, id } = payload;
   try {
-    const { username, id } = payload;
+    if (!id) {
+      dispatch(setActiveChat(username));
+    }
     const data = await updateReadStatus(id);
-    dispatch(setActiveChat(data));
+    dispatch(setActiveChat(data.otherUser.username));
+    dispatch(activateConversation(data));
+    socket.emit("update-read", { data });
   } catch (error) {
     console.error(error);
   }
