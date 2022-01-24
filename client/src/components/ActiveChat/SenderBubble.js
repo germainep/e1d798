@@ -8,6 +8,12 @@ const useStyles = makeStyles(() => ({
     flexDirection: "column",
     alignItems: "flex-end",
   },
+  avatar: {
+    height: 20,
+    width: 20,
+    marginRight: 6,
+    marginTop: 6,
+  },
   date: {
     fontSize: 11,
     color: "#BECCE2",
@@ -37,7 +43,7 @@ const SenderBubble = (props) => {
       <Box className={classes.bubble}>
         <Typography className={classes.text}>{text}</Typography>
       </Box>
-      {lastRead && <Avatar src={photo} />}
+      {lastRead && <Avatar src={photo} className={classes.avatar} />}
     </Box>
   );
 };
