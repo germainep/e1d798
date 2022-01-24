@@ -6,14 +6,13 @@ import moment from "moment";
 const Messages = (props) => {
   const { messages, otherUser, userId } = props;
 
-  const readMessages = messages.filter(
-    (message) => message.senderId === userId && message.read
-  );
-
   return (
     <Box>
       {messages.map((message, index, array) => {
         const time = moment(message.createdAt).format("h:mm");
+        const readMessages = messages.filter(
+          (message) => message.senderId === userId && message.read
+        );
         return message.senderId === userId ? (
           <SenderBubble
             key={message.id}
