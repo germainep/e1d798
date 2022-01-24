@@ -18,7 +18,7 @@ router.get("/", async (req, res, next) => {
           user2Id: userId,
         },
       },
-      attributes: ["id"],
+      attributes: ["id", "unread"],
       order: [[Message, "createdAt", "ASC"]],
       include: [
         { model: Message, order: ["createdAt", "DESC"] },
@@ -74,15 +74,16 @@ router.get("/", async (req, res, next) => {
       };
 
       // Counting messages in each conversation where the sender is not the current user
-      const unreadCount = await Message.count({
-        where: {
-          read: false,
-          conversationId: convoJSON.id,
-          senderId: {
-            [Op.not]: userId,
+      const unreadCount =
+        (await Message.count({
+          where: {
+            read: false,
+            conversationId: convoJSON.id,
+            senderId: {
+              [Op.not]: userId,
+            },
           },
-        },
-      });
+        })) || 0;
       convoJSON.unread = unreadCount;
       conversations[i] = convoJSON;
     }
