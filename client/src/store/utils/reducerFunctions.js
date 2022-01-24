@@ -80,7 +80,11 @@ export const addSearchedUsersToStore = (state, users) => {
   users.forEach((user) => {
     // only create a fake convo if we don't already have a convo with this user
     if (!currentUsers[user.id]) {
-      let fakeConvo = { otherUser: user, messages: [] };
+      let fakeConvo = {
+        otherUser: user,
+        messages: [],
+        latestMessageText: { text: "", read: false },
+      };
       newState.push(fakeConvo);
     }
   });
@@ -92,6 +96,7 @@ export const addNewConvoToStore = (state, recipientId, message) => {
   return state.map((convo) => {
     if (convo.otherUser.id === recipientId) {
       const newConvo = { ...convo };
+      message.unread = false;
       newConvo.id = message.conversationId;
       newConvo.messages = [message];
       newConvo.latestMessageText = {
@@ -110,7 +115,7 @@ export const setActiveChatToStore = (state, username) => {
   return username;
 };
 
-export const selectConversation = (state, conversation) => {
+export const activateConversationToStore = (state, conversation) => {
   return state.map((convo) => {
     if (convo.id === conversation.id) {
       const convoCopy = { ...conversation };

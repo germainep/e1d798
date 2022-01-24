@@ -8,7 +8,7 @@ const Messages = (props) => {
 
   return (
     <Box>
-      {messages.map((message, index, array) => {
+      {messages.map((message) => {
         const time = moment(message.createdAt).format("h:mm");
         const readMessages = messages.filter(
           (message) => message.senderId === userId && message.read
@@ -18,10 +18,7 @@ const Messages = (props) => {
             key={message.id}
             text={message.text}
             time={time}
-            lastRead={
-              message.read &&
-              readMessages[readMessages.length - 1].id === message.id
-            }
+            lastRead={readMessages[readMessages.length - 1].id === message.id}
             photo={otherUser.photoUrl}
           />
         ) : (

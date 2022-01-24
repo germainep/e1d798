@@ -6,7 +6,7 @@ const User = require("./user");
 
 const Conversation = db.define("conversation", {
   unread: {
-    type: Sequelize.STRING,
+    type: Sequelize.INTEGER,
     allowNull: false,
     defaultValue: 0,
   },
