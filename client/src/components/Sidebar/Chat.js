@@ -44,7 +44,9 @@ const Chat = (props) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
-      <Badge badgeContent={conversation.unread} color="primary" />
+      {conversation.unread > 0 && (
+        <Badge badgeContent={conversation.unread} color="primary" />
+      )}
     </Box>
   );
 };
