@@ -36,6 +36,7 @@ Conversation.findById = async function (conversationId, userId) {
     where: {
       [Op.and]: {
         id: conversationId,
+
         // makes sure to check that the req.user.id is one of the conversations users
         [Op.or]: {
           user1Id: userId,

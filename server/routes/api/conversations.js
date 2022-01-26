@@ -101,6 +101,14 @@ router.put("/:id", async (req, res, next) => {
     }
     const userId = req.user.id;
 
+    // send the userId along to verify that the req.user is a member of the conversation
+    const conversation = await Conversation.findById(req.params.id, userId);
+
+    // the conversation will return null if the req.user is not a member of the conversation
+    if (!conversation) {
+      return res.sendStatus(403);
+    }
+
     await Message.update(
       { read: true },
       {
@@ -112,8 +120,6 @@ router.put("/:id", async (req, res, next) => {
         },
       }
     );
-
-    const conversation = await Conversation.findById(req.params.id, userId);
 
     const convoJSON = conversation.toJSON();
 
