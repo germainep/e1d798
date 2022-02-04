@@ -6,45 +6,14 @@ export const addMessageToStore = (state, payload) => {
     newConvo.id = message.conversationId;
     newConvo.otherUser = sender;
     newConvo.messages = [message];
-    newConvo.latestMessageText = {
-      text: message.text,
-      read: false,
-    };
-
     return [newConvo, ...state];
   }
 
   return state.map((convo) => {
     if (convo.id === message.conversationId) {
-      const convoCopy = { ...convo };
-      const readMessages = convoCopy.messages.filter(
-        (message) => message.senderId !== message.otherUser.id && message.read
-      );
-      if (!convo.active) {
-        convoCopy.lastRead =
-          readMessages.length > 0
-            ? readMessages[readMessages.length - 1].id
-            : null;
-        convoCopy.messages = [...convoCopy.messages, message];
-        convoCopy.latestMessageText = {
-          text: message.text,
-          read: false,
-        };
-      } else {
-        convoCopy.messages = [
-          ...convoCopy.messages,
-          { ...message, read: true },
-        ];
-        convoCopy.latestMessageText = {
-          text: message.text,
-          read: true,
-        };
-      }
-
-      if (convo.otherUser.id === message.senderId && !convo.active) {
-        convoCopy.unread = convo.unread + 1;
-      }
-      return convoCopy;
+      const convoCopy = {...convo}
+      convoCopy.messages = [...convoCopy.messages, message]
+      return convoCopy
     } else {
       return convo;
     }
@@ -90,7 +59,7 @@ export const addSearchedUsersToStore = (state, users) => {
       let fakeConvo = {
         otherUser: user,
         messages: [],
-        latestMessageText: { text: "", read: false },
+        latestMessageText: {}
       };
       newState.push(fakeConvo);
     }
@@ -103,13 +72,8 @@ export const addNewConvoToStore = (state, recipientId, message) => {
   return state.map((convo) => {
     if (convo.otherUser.id === recipientId) {
       const newConvo = { ...convo };
-      message.unread = false;
       newConvo.id = message.conversationId;
       newConvo.messages = [message];
-      newConvo.latestMessageText = {
-        text: message.text,
-        read: false,
-      };
 
       return newConvo;
     } else {
@@ -118,20 +82,32 @@ export const addNewConvoToStore = (state, recipientId, message) => {
   });
 };
 
-export const setActiveChatToStore = (state, username) => {
-  return username;
-};
 
-export const activateConversationToStore = (state, conversation) => {
+export const updateMessagesToStore = (state, conversation) => {
+
   return state.map((convo) => {
     if (convo.id === conversation.id) {
-      const convoCopy = { ...conversation };
-      convoCopy.active = true;
-      return convoCopy;
-    } else {
       const convoCopy = { ...convo };
-      convoCopy.active = false;
+
+      convoCopy.messages = [...conversation.messages]
+
+      convoCopy.unread = convoCopy.messages.reduce((count, message) => {
+        return convoCopy.otherUser.id === message.senderId
+        && message.read === false ? count + 1 : count
+      }, 0)
+
+      convoCopy.latestMessageText = {
+        text: convoCopy.messages[convoCopy.messages.length - 1].text,
+        read: convoCopy.messages[convoCopy.messages.length - 1].read,
+      };
+
+
+
       return convoCopy;
+
     }
+    return convo
   });
 };
+
+

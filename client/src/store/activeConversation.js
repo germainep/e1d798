@@ -1,18 +1,19 @@
-import { setActiveChatToStore } from "./utils/reducerFunctions";
-
 const SET_ACTIVE_CHAT = "SET_ACTIVE_CHAT";
 
-export const setActiveChat = (username) => {
+export const setActiveChat = (username, id) => {
   return {
     type: SET_ACTIVE_CHAT,
-    username,
+    payload: {
+      username,
+      id
+    }
   };
 };
 
 const reducer = (state = "", action) => {
   switch (action.type) {
     case SET_ACTIVE_CHAT: {
-      return setActiveChatToStore(state, action.username);
+      return action.payload
     }
     default:
       return state;

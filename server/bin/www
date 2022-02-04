@@ -49,11 +49,15 @@ io.on("connection", (socket) => {
 
   socket.on("logout", (id) => {
     if (onlineUsers.includes(id)) {
-      userIndex = onlineUsers.indexOf(id);
+      let userIndex = onlineUsers.indexOf(id);
       onlineUsers.splice(userIndex, 1);
       socket.broadcast.emit("remove-offline-user", id);
     }
   });
+
+  socket.on('send-updates', (data) => {
+    socket.broadcast.emit('update-messages', data);
+  })
 });
 
 sessionStore

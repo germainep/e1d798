@@ -3,6 +3,7 @@ const { Op } = require("sequelize");
 const db = require("../db");
 const Message = require("./message");
 const User = require("./user");
+const res = require("express/lib/response");
 
 const Conversation = db.define("conversation", {
   unread: {
@@ -47,7 +48,7 @@ Conversation.findById = async function (conversationId, userId) {
     attributes: ["id", "unread"],
     order: [[Message, "createdAt", "ASC"]],
     include: [
-      { model: Message, order: ["createdAt", "DESC"] },
+      { model: Message, order: ["createdAt", "DESC"]},
       {
         model: User,
         as: "user1",
@@ -72,6 +73,10 @@ Conversation.findById = async function (conversationId, userId) {
       },
     ],
   });
+
+  if (!conversation) {
+    return res.sendStatus(403);
+  }
 
   return conversation;
 };

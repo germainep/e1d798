@@ -101,28 +101,34 @@ router.put("/:id", async (req, res, next) => {
     }
     const userId = req.user.id;
 
+    if(req.body.isActive) {
+      await Message.update(
+          {read: true},
+          {
+            where: {
+              [Op.and]: {
+                conversationId: req.params.id,
+                senderId: {
+                  [Op.not]: userId,
+                },
+                read: false
+              }
+            },
+          }
+      );
+    }
+
     // send the userId along to verify that the req.user is a member of the conversation
     const conversation = await Conversation.findById(req.params.id, userId);
 
     // the conversation will return null if the req.user is not a member of the conversation
-    if (!conversation) {
-      return res.sendStatus(403);
-    }
-
-    await Message.update(
-      { read: true },
-      {
-        where: {
-          conversationId: req.params.id,
-          senderId: {
-            [Op.not]: userId,
-          },
-        },
-      }
-    );
+    // if (!conversation) {
+    //   return res.sendStatus(403);
+    // }
 
     const convoJSON = conversation.toJSON();
 
+// set a property "otherUser" so that frontend will have easier access
     if (convoJSON.user1) {
       convoJSON.otherUser = convoJSON.user1;
       delete convoJSON.user1;
@@ -131,16 +137,8 @@ router.put("/:id", async (req, res, next) => {
       delete convoJSON.user2;
     }
 
-    if (onlineUsers.includes(convoJSON.otherUser.id)) {
-      convoJSON.otherUser.online = true;
-    } else {
-      convoJSON.otherUser.online = false;
-    }
 
-    convoJSON.latestMessageText = {
-      text: convoJSON.messages[convoJSON.messages.length - 1].text,
-      read: convoJSON.messages[convoJSON.messages.length - 1].read,
-    };
+
 
     res.json(convoJSON);
   } catch (error) {

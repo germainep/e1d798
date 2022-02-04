@@ -4,7 +4,6 @@ import { BadgeAvatar, ChatContent } from "../Sidebar";
 import { makeStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
 import { activateChat } from "../../store/utils/thunkCreators";
-import user from "../../store/user";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -22,19 +21,19 @@ const useStyles = makeStyles((theme) => ({
 
 const Chat = (props) => {
   const classes = useStyles();
-  const { conversation } = props;
+  const { conversation, activeConversation } = props;
   const { otherUser } = conversation;
 
-  const handleClick = async (id, username) => {
-    if (!conversation.active) {
-      const data = { id: id, username: username };
+  const handleClick = async (otherUserId, username, convoId) => {
+    if (activeConversation !== username) {
+      const data = {otherUserId, username, convoId };
       await props.activateChat(data);
     }
   };
 
   return (
     <Box
-      onClick={() => handleClick(conversation.id, otherUser.username)}
+      onClick={() => handleClick(otherUser.id, otherUser.username, conversation.id)}
       className={classes.root}
     >
       <BadgeAvatar

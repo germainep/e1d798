@@ -4,11 +4,11 @@ import {
   gotConversations,
   addConversation,
   setNewMessage,
-  setSearchedUsers,
-  activateConversation,
+  setSearchedUsers, setMessageUpdates,
 } from "../conversations";
 import { gotUser, setFetchingStatus } from "../user";
 import { setActiveChat } from "../activeConversation";
+import store from "../index";
 
 axios.interceptors.request.use(async function (config) {
   const token = await localStorage.getItem("messenger-token");
@@ -80,6 +80,22 @@ export const fetchConversations = () => async (dispatch) => {
   }
 };
 
+const updateMessageStatus = async (id, body) => {
+  const { data } = await axios.put(`/api/conversations/${id}`, body);
+  return data;
+};
+
+export const updateMessages = (convoId, isActive) => async (dispatch) =>{
+  try{
+    const body = {isActive: isActive}
+    const data = await updateMessageStatus(convoId, body);
+    dispatch(setMessageUpdates(data))
+    socket.emit("send-updates", data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 const saveMessage = async (body) => {
   const { data } = await axios.post("/api/messages", body);
   return data;
@@ -95,7 +111,7 @@ const sendMessage = (data, body) => {
 
 // message format to send: {recipientId, text, conversationId}
 // conversationId will be set to null if its a brand new conversation
-export const postMessage = (body) => async (dispatch) => {
+export const postMessage = (body) => async (dispatch, getState) => {
   try {
     const data = await saveMessage(body);
 
@@ -119,21 +135,18 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
     console.error(error);
   }
 };
-const updateReadStatus = async (id) => {
-  const { data } = await axios.put(`/api/conversations/${id}`);
-  return data;
-};
-export const activateChat = (payload) => async (dispatch) => {
-  const { username, id } = payload;
+
+export const activateChat = (payload) => async (dispatch, getState) => {
+  const { otherUserId, username, convoId } = payload;
   try {
-    if (!id) {
-      dispatch(setActiveChat(username));
-    }
-    const data = await updateReadStatus(id);
-    dispatch(setActiveChat(data.otherUser.username));
-    dispatch(activateConversation(data));
-    socket.emit("update-read", { data });
-  } catch (error) {
-    console.error(error);
+    dispatch(setActiveChat(username, otherUserId));
+    const isActive = store.getState().activeConversation.id === otherUserId
+    dispatch(updateMessages(convoId, isActive))
   }
+  catch(error){
+    console.error(error)
+  }
+
 };
+
+
