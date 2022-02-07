@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const { User, Conversation, Message } = require("../../db/models");
-const { Op } = require("sequelize");
+const { Op, DATE } = require("sequelize");
 const onlineUsers = require("../../onlineUsers");
 
 // get all conversations for a user, include latest message text for preview, and all messages
@@ -18,10 +18,10 @@ router.get("/", async (req, res, next) => {
           user2Id: userId,
         },
       },
-      attributes: ["id"],
+      attributes: ["id", "unread"],
       order: [[Message, "createdAt", "ASC"]],
       include: [
-        { model: Message, order: ["createdAt", "ASC"] },
+        { model: Message, order: ["createdAt", "DESC"] },
         {
           model: User,
           as: "user1",
@@ -68,12 +68,79 @@ router.get("/", async (req, res, next) => {
       }
 
       // set properties for notification count and latest message preview
-      convoJSON.latestMessageText =
-        convoJSON.messages[convoJSON.messages.length - 1].text;
+      convoJSON.latestMessageText = {
+        text: convoJSON.messages[convoJSON.messages.length - 1].text,
+        read: convoJSON.messages[convoJSON.messages.length - 1].read,
+      };
+
+      // Counting messages in each conversation where the sender is not the current user
+      const unreadCount =
+        (await Message.count({
+          where: {
+            read: false,
+            conversationId: convoJSON.id,
+            senderId: {
+              [Op.not]: userId,
+            },
+          },
+        })) || 0;
+      convoJSON.unread = unreadCount;
       conversations[i] = convoJSON;
     }
 
     res.json(conversations);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put("/:id", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
+    const userId = req.user.id;
+
+    if(req.body.isActive) {
+      await Message.update(
+          {read: true},
+          {
+            where: {
+              [Op.and]: {
+                conversationId: req.params.id,
+                senderId: {
+                  [Op.not]: userId,
+                },
+                read: false
+              }
+            },
+          }
+      );
+    }
+
+    // send the userId along to verify that the req.user is a member of the conversation
+    const conversation = await Conversation.findById(req.params.id, userId);
+
+    // the conversation will return null if the req.user is not a member of the conversation
+    // if (!conversation) {
+    //   return res.sendStatus(403);
+    // }
+
+    const convoJSON = conversation.toJSON();
+
+// set a property "otherUser" so that frontend will have easier access
+    if (convoJSON.user1) {
+      convoJSON.otherUser = convoJSON.user1;
+      delete convoJSON.user1;
+    } else if (convoJSON.user2) {
+      convoJSON.otherUser = convoJSON.user2;
+      delete convoJSON.user2;
+    }
+
+
+
+
+    res.json(convoJSON);
   } catch (error) {
     next(error);
   }
